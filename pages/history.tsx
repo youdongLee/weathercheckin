@@ -5,8 +5,6 @@ import React, { useMemo } from 'react';
 import {
   ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useCheckin } from '../stores/CheckinContext';
@@ -75,7 +73,6 @@ function buildDateRange(history: { date: string }[], today: string): string[] {
 }
 
 function HistoryPage() {
-  const navigation = Route.useNavigation();
   const { history, todayRecord } = useCheckin();
 
   const today = todayDateStr();
@@ -122,19 +119,6 @@ function HistoryPage() {
 
   return (
     <View style={styles.container}>
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Txt typography="t4" color="#191F28">체크인 기록</Txt>
-        <View style={{ width: 36 }} />
-      </View>
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -225,25 +209,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonText: {
-    fontSize: 22,
-    color: '#191F28',
   },
   scroll: {
     flex: 1,
