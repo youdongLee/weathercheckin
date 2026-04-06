@@ -36,6 +36,19 @@ const PROMOTION_CODES: Record<CheckinType | 'bonus', string> = {
   bonus:     'WEATHERCHECKIN_BONUS',
 };
 
+// 시간대별 참여 가능 시간 (분 단위, KST)
+const CHECKIN_WINDOWS: Record<CheckinType | 'bonus', { start: number; end: number; label: string }> = {
+  morning:   { start:  7 * 60,           end:  9 * 60,       label: '오전 7시 ~ 9시' },
+  afternoon: { start: 12 * 60,           end: 14 * 60,       label: '오후 12시 ~ 2시' },
+  evening:   { start: 18 * 60,           end: 20 * 60,       label: '오후 6시 ~ 8시' },
+  bonus:     { start: 21 * 60,           end: 23 * 60 + 50,  label: '오후 9시 ~ 11시 50분' },
+};
+
+function kstMinutes(): number {
+  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return kst.getUTCHours() * 60 + kst.getUTCMinutes();
+}
+
 const CHECKIN_INFO: Record<CheckinType, { label: string; emoji: string; description: string }> = {
   morning:   { label: '아침',  emoji: '🌅', description: '오늘 날씨를 확인하고 포인트 받기' },
   afternoon: { label: '점심',  emoji: '☀️', description: '낮 날씨를 확인하고 포인트 받기' },
@@ -59,6 +72,17 @@ function HomePage() {
   const pendingAction = useRef<CheckinType | 'bonus' | null>(null);
   const adSupported = loadFullScreenAd.isSupported();
   const [adLoaded, setAdLoaded] = useState(!adSupported);
+  const [nowMinutes, setNowMinutes] = useState(kstMinutes());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowMinutes(kstMinutes()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const isWindowActive = (type: CheckinType | 'bonus') => {
+    const { start, end } = CHECKIN_WINDOWS[type];
+    return nowMinutes >= start && nowMinutes < end;
+  };
 
   useEffect(() => {
     getWeatherForecast(DEFAULT_CITY.lat, DEFAULT_CITY.lon)
@@ -131,12 +155,12 @@ function HomePage() {
   };
 
   const handleCheckin = (type: CheckinType) => {
-    if (todayRecord[type] || !adLoaded) return;
+    if (todayRecord[type] || !adLoaded || !isWindowActive(type)) return;
     showRewardAd(type);
   };
 
   const handleBonus = () => {
-    if (!allThreeDone || todayRecord.bonusClaimed || !adLoaded) return;
+    if (!allThreeDone || todayRecord.bonusClaimed || !adLoaded || !isWindowActive('bonus')) return;
     showRewardAd('bonus');
   };
 
@@ -208,13 +232,17 @@ function HomePage() {
         {(['morning', 'afternoon', 'evening'] as CheckinType[]).map((type) => {
           const info = CHECKIN_INFO[type];
           const done = todayRecord[type];
+          const windowActive = isWindowActive(type);
+          const windowLabel = CHECKIN_WINDOWS[type].label;
           return (
-            <View key={type} style={[styles.checkinCard, done && styles.checkinCardDone]}>
+            <View key={type} style={[styles.checkinCard, done && styles.checkinCardDone, !windowActive && !done && styles.checkinCardInactive]}>
               <View style={styles.checkinCardLeft}>
                 <Text style={styles.checkinEmoji}>{info.emoji}</Text>
                 <View>
-                  <Text style={[styles.checkinLabel, done && styles.checkinLabelDone]}>{info.label}</Text>
-                  <Text style={styles.checkinDescription}>{info.description}</Text>
+                  <Text style={[styles.checkinLabel, done && styles.checkinLabelDone, !windowActive && !done && styles.checkinLabelInactive]}>{info.label}</Text>
+                  <Text style={styles.checkinDescription}>
+                    {done ? info.description : windowActive ? info.description : windowLabel}
+                  </Text>
                 </View>
               </View>
               {done ? (
@@ -225,7 +253,7 @@ function HomePage() {
                 <Button
                   type="primary"
                   size="medium"
-                  disabled={!adLoaded}
+                  disabled={!adLoaded || !windowActive}
                   onPress={() => handleCheckin(type)}
                 >
                   참여하기
@@ -239,15 +267,15 @@ function HomePage() {
         <TouchableOpacity
           style={[
             styles.bonusButton,
-            (!allThreeDone || todayRecord.bonusClaimed) && styles.bonusButtonDisabled,
+            (!allThreeDone || todayRecord.bonusClaimed || !isWindowActive('bonus')) && styles.bonusButtonDisabled,
           ]}
           onPress={handleBonus}
           activeOpacity={0.7}
-          disabled={!allThreeDone || todayRecord.bonusClaimed || !adLoaded}
+          disabled={!allThreeDone || todayRecord.bonusClaimed || !adLoaded || !isWindowActive('bonus')}
         >
           {todayRecord.bonusClaimed ? (
             <Text style={styles.bonusButtonTextDisabled}>✓ 오늘 보너스를 모두 받았어요</Text>
-          ) : allThreeDone ? (
+          ) : allThreeDone && isWindowActive('bonus') ? (
             <>
               <Text style={styles.bonusButtonTitle}>🎁 3번 완료 보너스!</Text>
               <Text style={styles.bonusButtonSub}>광고 보고 추가 10원 받기</Text>
@@ -255,7 +283,11 @@ function HomePage() {
           ) : (
             <>
               <Text style={styles.bonusButtonTitleDisabled}>🎁 3번 완료 보너스 +10원</Text>
-              <Text style={styles.bonusButtonSubDisabled}>{completedCount}/3 완료 — 3번 모두 참여하면 활성화돼요</Text>
+              <Text style={styles.bonusButtonSubDisabled}>
+                {!allThreeDone
+                  ? `${completedCount}/3 완료 — 3번 모두 참여하면 활성화돼요`
+                  : CHECKIN_WINDOWS.bonus.label}
+              </Text>
             </>
           )}
         </TouchableOpacity>
@@ -410,6 +442,12 @@ const styles = StyleSheet.create({
   checkinCardDone: {
     borderColor: PRIMARY,
     backgroundColor: PRIMARY_LIGHT,
+  },
+  checkinCardInactive: {
+    opacity: 0.5,
+  },
+  checkinLabelInactive: {
+    color: '#8B95A1',
   },
   checkinCardLeft: {
     flexDirection: 'row',
