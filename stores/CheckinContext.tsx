@@ -82,12 +82,12 @@ export function CheckinProvider({ children }: { children: React.ReactNode }) {
   };
 
   const checkin = async (type: CheckinType) => {
-    const updated = { ...todayRecord, [type]: true, totalEarned: todayRecord.totalEarned + 10 };
+    const updated = { ...todayRecord, [type]: true, totalEarned: todayRecord.totalEarned + 3 };
     await saveRecord(updated);
   };
 
   const claimBonus = async () => {
-    const updated = { ...todayRecord, bonusClaimed: true, totalEarned: todayRecord.totalEarned + 10 };
+    const updated = { ...todayRecord, bonusClaimed: true, totalEarned: todayRecord.totalEarned + 3 };
     await saveRecord(updated);
   };
 

@@ -10,7 +10,6 @@ import {
 
 export const Route = createRoute('/info', {
   component: InfoPage,
-  screenOptions: { headerShown: false },
 });
 
 const PRIMARY = '#3B82F6';
@@ -30,7 +29,7 @@ const INFO_CARDS = [
   {
     emoji: '💰',
     title: '포인트 지급 방식',
-    body: '참여 1회당 토스포인트 10원이 지급돼요. 보너스 포함 최대 하루 40원을 받을 수 있어요.',
+    body: '참여 1회당 토스포인트 3원이 지급돼요. 보너스 포함 최대 하루 12원을 받을 수 있어요.',
   },
   {
     emoji: '📺',

@@ -18,7 +18,6 @@ import { DEFAULT_CITY, getWeatherForecast, weatherIcon } from '../services/weath
 
 export const Route = createRoute('/', {
   component: HomePage,
-  screenOptions: { headerShown: false },
 });
 
 const PRIMARY = '#3B82F6';
@@ -115,8 +114,8 @@ function HomePage() {
     if (action === 'bonus') {
       await claimBonus();
       try {
-        await grantPromotionReward({ params: { promotionCode: code, amount: 10 } });
-        Alert.alert('🎁 보너스 획득!', '3번 체크인 완료 보너스로 토스포인트 10원을 받았어요!');
+        await grantPromotionReward({ params: { promotionCode: code, amount: 3 } });
+        Alert.alert('🎁 보너스 획득!', '3번 체크인 완료 보너스로 토스포인트 3원을 받았어요!');
       } catch {
         Alert.alert('🎁 보너스 완료!', '포인트는 잠시 후 지급돼요.');
       }
@@ -124,8 +123,8 @@ function HomePage() {
       await checkin(action);
       const info = CHECKIN_INFO[action];
       try {
-        await grantPromotionReward({ params: { promotionCode: code, amount: 10 } });
-        Alert.alert(`${info.emoji} ${info.label} 체크인 완료!`, '토스포인트 10원이 지급됐어요!');
+        await grantPromotionReward({ params: { promotionCode: code, amount: 3 } });
+        Alert.alert(`${info.emoji} ${info.label} 체크인 완료!`, '토스포인트 3원이 지급됐어요!');
       } catch {
         Alert.alert(`${info.emoji} 체크인 완료!`, '포인트는 잠시 후 지급돼요.');
       }
@@ -170,10 +169,7 @@ function HomePage() {
     <View style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <View>
-          <Txt typography="t2" color={PRIMARY}>날씨체크인</Txt>
-          <Txt typography="c1" color="#8B95A1" style={styles.headerDate}>{todayLabel()}</Txt>
-        </View>
+        <Txt typography="c1" color="#8B95A1">{todayLabel()}</Txt>
         <TouchableOpacity
           style={styles.infoButton}
           onPress={() => navigation.navigate('/info')}
@@ -188,7 +184,7 @@ function HomePage() {
         <Txt typography="t5" color="#4E5968">
           오늘 <Txt typography="t5" color={PRIMARY}>{totalEarnedToday}원</Txt> 획득했어요
         </Txt>
-        <Txt typography="c1" color="#B0B8C1">최대 40원</Txt>
+        <Txt typography="c1" color="#B0B8C1">최대 12원</Txt>
       </View>
 
       <ScrollView
@@ -247,7 +243,7 @@ function HomePage() {
               </View>
               {done ? (
                 <View style={styles.doneTag}>
-                  <Text style={styles.doneTagText}>✓ +10원</Text>
+                  <Text style={styles.doneTagText}>✓ +3원</Text>
                 </View>
               ) : (
                 <Button
@@ -278,11 +274,11 @@ function HomePage() {
           ) : allThreeDone && isWindowActive('bonus') ? (
             <>
               <Text style={styles.bonusButtonTitle}>🎁 3번 완료 보너스!</Text>
-              <Text style={styles.bonusButtonSub}>광고 보고 추가 10원 받기</Text>
+              <Text style={styles.bonusButtonSub}>광고 보고 추가 3원 받기</Text>
             </>
           ) : (
             <>
-              <Text style={styles.bonusButtonTitleDisabled}>🎁 3번 완료 보너스 +10원</Text>
+              <Text style={styles.bonusButtonTitleDisabled}>🎁 3번 완료 보너스 +3원</Text>
               <Text style={styles.bonusButtonSubDisabled}>
                 {!allThreeDone
                   ? `${completedCount}/3 완료 — 3번 모두 참여하면 활성화돼요`
