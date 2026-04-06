@@ -68,15 +68,16 @@ function LoginGate({ children }: PropsWithChildren) {
         <Txt typography="b1" color="#8B95A1" style={styles.loginDesc}>
           날씨를 확인하고 토스포인트를 받으려면{'\n'}토스 로그인이 필요해요
         </Txt>
-        <Button
-          type="primary"
-          size="large"
-          onPress={handleLogin}
-          disabled={logging}
-          style={styles.loginButton}
-        >
-          {logging ? '로그인 중...' : '토스로 시작하기'}
-        </Button>
+        <View style={styles.loginButton}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={handleLogin}
+            disabled={logging}
+          >
+            {logging ? '로그인 중...' : '토스로 시작하기'}
+          </Button>
+        </View>
       </View>
     );
   }
@@ -151,5 +152,6 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     width: '100%',
+    alignItems: 'center',
   },
 });
